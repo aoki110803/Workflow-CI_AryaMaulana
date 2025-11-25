@@ -1,0 +1,50 @@
+name: MLflow CI - Basic
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  train-model:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mlflow==2.19.0 scikit-learn==1.5.2 pandas==2.2.3 numpy==1.26.4
+    
+    - name: Run MLflow Project
+      run: |
+        cd MLProject
+        mlflow run . \
+          --env-manager=local \
+          --experiment-name="CI_Training_Experiment" \
+          -P train_data=dataset_preprocessing/train_data.csv \
+          -P test_data=dataset_preprocessing/test_data.csv \
+          -P model_type=RandomForest
+    
+    - name: List artifacts
+      run: |
+        echo "Training completed. Checking artifacts..."
+        ls -la MLProject/mlruns/ || echo "No mlruns directory"
+        
+    - name: Upload training logs
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: training-logs
+        path: |
+          MLProject/mlruns/
+          MLProject/run_id.txt
+        retention-days: 30
