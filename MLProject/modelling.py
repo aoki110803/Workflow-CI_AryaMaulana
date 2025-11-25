@@ -97,8 +97,8 @@ def main():
         test_path = sys.argv[2]
         model_type = sys.argv[3] if len(sys.argv) > 3 else "RandomForest"
     else:
-        train_path = "dataset_preprocessing/train_data.csv"
-        test_path = "dataset_preprocessing/test_data.csv"
+        train_path = "preprocessing/dataset_preprocessing/train_data.csv"
+        test_path = "preprocessing/dataset_preprocessing/test_data.csv"
         model_type = "RandomForest"
     
     # Load data
