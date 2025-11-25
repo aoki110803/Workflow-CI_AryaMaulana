@@ -1,0 +1,56 @@
+name: MLflow CI Workflow - Skilled
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  train-model:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install MLflow and dependencies
+      run: |
+        pip install mlflow==2.19.0 scikit-learn pandas numpy
+    
+    - name: Run MLflow Project
+      run: |
+        cd MLProject
+        mlflow run . \
+          --env-manager=local \
+          -P train_data=dataset_preprocessing/train_data.csv \
+          -P test_data=dataset_preprocessing/test_data.csv \
+          -P model_type=RandomForest
+    
+    - name: Package MLflow artifacts
+      run: |
+        mkdir -p artifacts
+        cp -r MLProject/mlruns artifacts/ || echo "No mlruns found"
+        tar -czf model-artifacts.tar.gz artifacts/
+    
+    - name: Upload to GitHub
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add model-artifacts.tar.gz
+        git diff --quiet && git diff --staged --quiet || git commit -m "Auto: Update model artifacts [skip ci]"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Upload as GitHub Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-artifacts
+        path: model-artifacts.tar.gz
+        retention-days: 30
