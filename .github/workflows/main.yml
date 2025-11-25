@@ -1,0 +1,80 @@
+name: Retrain Diabetes ML Model
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: MLProject/conda.yaml
+          activate-environment: mlflow-diabetes-env
+          auto-activate-base: false
+      
+      - name: Verify Conda Environment
+        shell: bash -l {0}
+        run: |
+          conda info
+          conda list
+          echo "✅ Conda environment ready"
+      
+      - name: Ensure dataset exists
+        shell: bash -l {0}
+        run: |
+          echo "📂 Checking dataset files..."
+          if [ ! -f "MLProject/dataset_preprocessing/train_data.csv" ]; then
+            echo "❌ Training data not found! Please add train_data.csv to MLProject/dataset_preprocessing/"
+            exit 1
+          fi
+          if [ ! -f "MLProject/dataset_preprocessing/test_data.csv" ]; then
+            echo "❌ Testing data not found! Please add test_data.csv to MLProject/dataset_preprocessing/"
+            exit 1
+          fi
+          echo "✅ Dataset files found"
+          ls -lh MLProject/dataset_preprocessing/
+      
+      - name: Install MLflow (if not in env)
+        shell: bash -l {0}
+        run: |
+          pip install --upgrade mlflow
+          echo "✅ MLflow installed"
+      
+      - name: Run MLflow Project (Training)
+        shell: bash -l {0}
+        run: |
+          cd MLProject
+          echo "🚀 Running MLflow project for Diabetes model training..."
+          mlflow run . \
+            -P train_data="dataset_preprocessing/train_data.csv" \
+            -P test_data="dataset_preprocessing/test_data.csv" \
+            -P model_type="RandomForest"
+          echo "✅ Model trained successfully"
+      
+      - name: Show MLflow Run Summary
+        shell: bash -l {0}
+        run: |
+          echo "📊 Listing MLflow runs..."
+          ls -R MLProject/mlruns || echo "⚠️ No mlruns directory found!"
+          
+      - name: Upload training artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mlflow-artifacts
+          path: |
+            MLProject/mlruns/
+            MLProject/run_id.txt
+          retention-days: 30
