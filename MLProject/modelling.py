@@ -1,5 +1,5 @@
 """
-File Modelling untuk MLflow Project CI/CD
+File Modelling untuk MLflow Project CI
 """
 
 import pandas as pd
