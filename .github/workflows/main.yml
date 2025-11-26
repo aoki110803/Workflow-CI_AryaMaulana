@@ -60,7 +60,17 @@ jobs:
       run: |
         cd MLProject
 
-        RUN_ID=$(find mlruns/0 -maxdepth 1 -type d -printf "%f\n" | grep -E "^[0-9a-f]{20,}$" | head -n 1)
+        RUN_ID=""
+        for run in $(ls mlruns/0); do
+          if [ -d "mlruns/0/$run/artifacts/model" ]; then
+            RUN_ID=$run
+          fi
+        done
+
+        if [ -z "$RUN_ID" ]; then
+          echo "❌ No MLflow run with a logged model found!"
+          exit 1
+        fi
 
         echo "RUN ID FOUND: $RUN_ID"
         echo "Model path: mlruns/0/$RUN_ID/artifacts/model"

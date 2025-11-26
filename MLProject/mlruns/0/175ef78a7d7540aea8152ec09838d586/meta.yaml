@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/BEM/Asah2025/SistemMachineLearning/SMSML_Arya-Maulana/Workflow-CI_AryaMaulana/MLProject/mlruns/0/175ef78a7d7540aea8152ec09838d586/artifacts
+end_time: 1764164975736
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 175ef78a7d7540aea8152ec09838d586
+run_name: RandomForest_CI
+run_uuid: 175ef78a7d7540aea8152ec09838d586
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764164963156
+status: 3
+tags: []
+user_id: aabdu
