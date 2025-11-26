@@ -60,36 +60,41 @@ jobs:
       run: |
         cd MLProject
 
-        RUN_ID=""
-        for run in $(ls mlruns/0); do
-          if [ -d "mlruns/0/$run/artifacts/model" ]; then
-            RUN_ID=$run
-          fi
-        done
+        # Sanitize username (remove hidden newline/spaces)
+        USERNAME=$(echo "${{ secrets.DOCKER_USERNAME }}" | tr -d '[:space:]')
+        echo "Using cleaned username: '$USERNAME'"
 
-        if [ -z "$RUN_ID" ]; then
-          echo "❌ No MLflow run with a logged model found!"
+        # Detect latest run
+        RUN_ID=$(ls -td mlruns/0/*/ | head -n 1 | sed 's/.*mlruns\/0\///;s/\///')
+
+        echo "Detected RUN_ID = $RUN_ID"
+
+        # Validate model folder exists
+        if [ ! -d "mlruns/0/$RUN_ID/artifacts/model" ]; then
+          echo "❌ No MLflow model found in artifacts!"
           exit 1
         fi
 
-        echo "RUN ID FOUND: $RUN_ID"
-        echo "Model path: mlruns/0/$RUN_ID/artifacts/model"
+        echo "Model path validated."
 
+        # Build Docker image
         mlflow models build-docker \
           -m "mlruns/0/$RUN_ID/artifacts/model" \
-          -n "${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest" \
+          -n "$USERNAME/dashboard_aryamaulana:latest" \
           --enable-mlserver
-      continue-on-error: true
+      continue-on-error: false
 
     - name: Push Docker image to Docker Hub
       run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest
-      continue-on-error: true
+        USERNAME=$(echo "${{ secrets.DOCKER_USERNAME }}" | tr -d '[:space:]')
+        docker push $USERNAME/dashboard_aryamaulana:latest
+      continue-on-error: false
 
     - name: Create Docker Hub link file
       run: |
-        echo "Docker Hub Repository: https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana" > docker_hub_link.txt
-        echo "Pull command: docker pull ${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest" >> docker_hub_link.txt
+        USERNAME=$(echo "${{ secrets.DOCKER_USERNAME }}" | tr -d '[:space:]')
+        echo "Docker Hub Repository: https://hub.docker.com/r/$USERNAME/dashboard_aryamaulana" > docker_hub_link.txt
+        echo "Pull command: docker pull $USERNAME/dashboard_aryamaulana:latest" >> docker_hub_link.txt
 
     - name: Upload Docker Hub link
       uses: actions/upload-artifact@v4
@@ -101,4 +106,4 @@ jobs:
       run: |
         echo "✅ MLflow training finished!"
         echo "🚀 Docker image pushed to Docker Hub!"
-        echo "📦 Image: ${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest"
+        echo "📦 Image successfully built and uploaded!"
