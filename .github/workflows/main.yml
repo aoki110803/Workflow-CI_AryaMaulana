@@ -29,8 +29,8 @@ jobs:
         mlflow run . \
           --env-manager=local \
           --experiment-name="CI_Training_Experiment" \
-          -P train_data=../preprocessing/dataset_preprocessing/train_data.csv
-          -P test_data=../preprocessing/dataset_preprocessing/test_data.csv
+          -P train_data=preprocessing/dataset_preprocessing/train_data.csv
+          -P test_data=preprocessing/dataset_preprocessing/test_data.csv
           -P model_type=RandomForest
 
     - name: List artifacts

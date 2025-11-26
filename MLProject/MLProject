@@ -5,7 +5,7 @@ conda_env: conda.yaml
 entry_points:
   main:
     parameters:
-      train_data: {type: string, default: "../MLProject/preprocessing/dataset_preprocessing/train_data.csv"}
-      test_data: {type: string, default: "../MLProject/preprocessing/dataset_preprocessing/test_data.csv"}
+      train_data: {type: string, default: "preprocessing/dataset_preprocessing/train_data.csv"}
+      test_data: {type: string, default: "preprocessing/dataset_preprocessing/test_data.csv"}
       model_type: {type: string, default: "RandomForest"}
     command: "python modelling.py {train_data} {test_data} {model_type}"
