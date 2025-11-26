@@ -9,9 +9,11 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import sys
-import os
 import warnings
 warnings.filterwarnings('ignore')
+
+
+TARGET_COLUMN = "Outcome"   
 
 
 def load_data(train_path, test_path):
@@ -20,15 +22,29 @@ def load_data(train_path, test_path):
     
     train_df = pd.read_csv(train_path)
     test_df = pd.read_csv(test_path)
-    
-    X_train = train_df.iloc[:, :-1]
-    y_train = train_df.iloc[:, -1]
-    X_test = test_df.iloc[:, :-1]
-    y_test = test_df.iloc[:, -1]
-    
+
+    # Validasi apakah target ada
+    if TARGET_COLUMN not in train_df.columns:
+        raise ValueError(f"TARGET_COLUMN '{TARGET_COLUMN}' tidak ditemukan di dataset!")
+
+    # Pisahkan X dan y secara aman
+    X_train = train_df.drop(columns=[TARGET_COLUMN])
+    y_train = train_df[TARGET_COLUMN]
+
+    X_test = test_df.drop(columns=[TARGET_COLUMN])
+    y_test = test_df[TARGET_COLUMN]
+
+    # ========================
+    # FIX LABEL CONTINUOUS → 0/1
+    # ========================
+    y_train = (y_train > 0).astype(int)
+    y_test = (y_test > 0).astype(int)
+
     print(f" Data loaded - Train: {X_train.shape}, Test: {X_test.shape}")
+    print(f" Unique y values after fix: {y_train.unique()}")
     
     return X_train, X_test, y_train, y_test
+
 
 
 def train_model(X_train, X_test, y_train, y_test, model_type="RandomForest"):
@@ -36,12 +52,10 @@ def train_model(X_train, X_test, y_train, y_test, model_type="RandomForest"):
     
     print(f"Training {model_type} Model")
     
-    # Enable autolog
     mlflow.sklearn.autolog()
     
     with mlflow.start_run(run_name=f"{model_type}_CI") as run:
         
-        # Select model
         if model_type == "RandomForest":
             model = RandomForestClassifier(
                 n_estimators=100,
@@ -64,14 +78,11 @@ def train_model(X_train, X_test, y_train, y_test, model_type="RandomForest"):
         else:
             raise ValueError(f"Unknown model type: {model_type}")
         
-        # Train
         print("Training...")
         model.fit(X_train, y_train)
         
-        # Predict
         y_pred = model.predict(X_test)
         
-        # Metrics
         accuracy = accuracy_score(y_test, y_pred)
         precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
         recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
@@ -88,10 +99,10 @@ def train_model(X_train, X_test, y_train, y_test, model_type="RandomForest"):
         return model, run.info.run_id
 
 
+
 def main():
     """Main function"""
     
-    # Parse arguments
     if len(sys.argv) > 1:
         train_path = sys.argv[1]
         test_path = sys.argv[2]
@@ -101,10 +112,8 @@ def main():
         test_path = "../preprocessing/dataset_preprocessing/test_data.csv"
         model_type = "RandomForest"
     
-    # Load data
     X_train, X_test, y_train, y_test = load_data(train_path, test_path)
     
-    # Train model
     model, run_id = train_model(X_train, X_test, y_train, y_test, model_type)
     
     print(" Model training pipeline completed!")

@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/BEM/Asah2025/SistemMachineLearning/SMSML_Arya-Maulana/Workflow-CI_AryaMaulana/MLProject/mlruns/0/928d102d1a254614833844da10b85dff/artifacts
+end_time: 1764157300399
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 928d102d1a254614833844da10b85dff
+run_name: clumsy-colt-328
+run_uuid: 928d102d1a254614833844da10b85dff
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764157285435
+status: 4
+tags: []
+user_id: aabdu

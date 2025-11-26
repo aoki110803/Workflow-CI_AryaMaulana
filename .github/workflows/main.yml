@@ -1,4 +1,4 @@
-name: MLflow CI - Basic
+name: MLflow Training CI - Advanced with Docker
 
 on:
   push:
@@ -7,44 +7,79 @@ on:
   workflow_dispatch:
 
 jobs:
-  train-model:
+  train-and-build-docker:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
-    
+      uses: actions/checkout@v3
+
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v4
       with:
         python-version: '3.12'
-    
+
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install mlflow==2.19.0 scikit-learn==1.5.2 pandas==2.2.3 numpy==1.26.4
-    
+        pip install mlflow==2.19.0 pandas numpy scikit-learn
+
     - name: Run MLflow Project
       run: |
         cd MLProject
-        mlflow run . \
-          --env-manager=local \
-          --experiment-name="CI_Training_Experiment" \
-          -P train_data=dataset_preprocessing/train_data.csv \
-          -P test_data=dataset_preprocessing/test_data.csv \
-          -P model_type=RandomForest
-    
-    - name: List artifacts
+        mlflow run . --env-manager=local
+
+    - name: Package MLflow artifacts
       run: |
-        echo "Training completed. Checking artifacts..."
-        ls -la MLProject/mlruns/ || echo "No mlruns directory"
-        
-    - name: Upload training logs
-      uses: actions/upload-artifact@v4
-      if: always()
+        mkdir -p artifacts_output
+        if [ -d "MLProject/mlruns" ]; then
+          cp -r MLProject/mlruns artifacts_output/
+        fi
+
+    - name: Upload artifacts to GitHub
+      uses: actions/upload-artifact@v3
       with:
-        name: training-logs
-        path: |
-          MLProject/mlruns/
-          MLProject/run_id.txt
+        name: mlflow-artifacts
+        path: artifacts_output/
         retention-days: 30
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build Docker image with MLflow
+      run: |
+        cd MLProject
+        RUN_ID=$(ls mlruns/0/ | sort -r | head -n 1)
+
+        mlflow models build-docker \
+          -m "mlruns/0/$RUN_ID/artifacts/model" \
+          -n "${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest" \
+          --enable-mlserver
+      continue-on-error: true
+
+    - name: Push Docker image to Docker Hub
+      run: |
+        docker push ${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest
+      continue-on-error: true
+
+    - name: Create Docker Hub link file
+      run: |
+        echo "Docker Hub Repository: https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana" > docker_hub_link.txt
+        echo "Pull command: docker pull ${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest" >> docker_hub_link.txt
+
+    - name: Upload Docker Hub link
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-hub-link
+        path: docker_hub_link.txt
+
+    - name: Success notification
+      run: |
+        echo "✅ MLflow training finished!"
+        echo "🚀 Docker image pushed to Docker Hub!"
+        echo "📦 Image: ${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest"

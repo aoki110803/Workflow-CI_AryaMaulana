@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/BEM/Asah2025/SistemMachineLearning/SMSML_Arya-Maulana/Workflow-CI_AryaMaulana/MLProject/mlruns/0/bd031cacac3344e79c4205afd6560ffc/artifacts
+end_time: 1764157637245
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: bd031cacac3344e79c4205afd6560ffc
+run_name: trusting-bat-340
+run_uuid: bd031cacac3344e79c4205afd6560ffc
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764157591509
+status: 3
+tags: []
+user_id: aabdu

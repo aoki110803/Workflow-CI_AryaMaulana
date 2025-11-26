@@ -1,0 +1,15 @@
+artifact_uri: file:///D:/BEM/Asah2025/SistemMachineLearning/SMSML_Arya-Maulana/Workflow-CI_AryaMaulana/MLProject/mlruns/0/c9a1bca65f4e424689f652e0f1bc4208/artifacts
+end_time: 1764156912737
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c9a1bca65f4e424689f652e0f1bc4208
+run_name: zealous-elk-182
+run_uuid: c9a1bca65f4e424689f652e0f1bc4208
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1764156865460
+status: 4
+tags: []
+user_id: aabdu
