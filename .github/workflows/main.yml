@@ -32,7 +32,7 @@ jobs:
           -P train_data=dataset_preprocessing/train_data.csv \
           -P test_data=dataset_preprocessing/test_data.csv \
           -P model_type=RandomForest
-    
+
     - name: List artifacts
       run: |
         mkdir -p artifacts_output
@@ -41,7 +41,7 @@ jobs:
         fi
 
     - name: Upload artifacts to GitHub
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: mlflow-artifacts
         path: artifacts_output/
@@ -78,7 +78,7 @@ jobs:
         echo "Pull command: docker pull ${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest" >> docker_hub_link.txt
 
     - name: Upload Docker Hub link
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: docker-hub-link
         path: docker_hub_link.txt
