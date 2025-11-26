@@ -61,6 +61,9 @@ jobs:
         cd MLProject
         RUN_ID=$(ls mlruns/0/ | sort -r | head -n 1)
 
+        echo "RUN ID FOUND: $RUN_ID"
+        echo "Model path: mlruns/0/$RUN_ID/artifacts/model"
+
         mlflow models build-docker \
           -m "mlruns/0/$RUN_ID/artifacts/model" \
           -n "${{ secrets.DOCKER_USERNAME }}/dashboard_aryamaulana:latest" \
