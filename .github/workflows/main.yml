@@ -59,7 +59,8 @@ jobs:
     - name: Build Docker image with MLflow
       run: |
         cd MLProject
-        RUN_ID=$(ls mlruns/0/ | sort -r | head -n 1)
+
+        RUN_ID=$(find mlruns/0 -maxdepth 1 -type d -printf "%f\n" | grep -E "^[0-9a-f]{20,}$" | head -n 1)
 
         echo "RUN ID FOUND: $RUN_ID"
         echo "Model path: mlruns/0/$RUN_ID/artifacts/model"
