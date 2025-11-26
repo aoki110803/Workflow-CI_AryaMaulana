@@ -96,6 +96,11 @@ def train_model(X_train, X_test, y_train, y_test, model_type="RandomForest"):
         print(f"\nRun ID: {run.info.run_id}")
         print(f"Artifact URI: {run.info.artifact_uri}")
         
+        # =====================
+        # LOG MODEL (WAJIB!)
+        # =====================
+        mlflow.sklearn.log_model(model, "model")
+
         return model, run.info.run_id
 
 
